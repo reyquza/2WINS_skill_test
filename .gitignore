@@ -35,6 +35,7 @@ Thumbs.db
 .agents/
 .codex/
 **/CLAUDE.md
+**/AGENTS.md
 .frontend-git-backup/
 
 # Company-provided assignment document
