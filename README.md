@@ -90,8 +90,6 @@ npm run dev
 
 ## テスト
 
-実務でも自動テストは必要です。変更のたびに重要なルールが壊れていないことを、手作業より速く同じ条件で確認できるためです。
-
 ```bash
 cd backend
 uv run pytest
@@ -173,7 +171,7 @@ sequenceDiagram
 | `dm_rooms` | DMの2人と`rooms`の対応 |
 | `messages` | ルーム内のメッセージ |
 
-`rooms`と`room_members`をDM専用情報から分け、メッセージを「DM」ではなく「ルーム」に所属させました。将来グループを追加しても`messages`を作り直さず、グループ情報と参加者を追加できます。
+`rooms`と`room_members`をDM専用情報から分け、メッセージを「DM」ではなく「ルーム」に所属させました。将来グループチャット機能を追加しても`messages`を作り直さず、グループ情報と参加者を追加できます。
 
 `dm_rooms`では小さいユーザーIDを`user_low_id`、大きいIDを`user_high_id`へ保存します。このcanonical pairとUNIQUE制約により、Alice→BobとBob→Aliceを同じ組み合わせにし、同じ2人のDMが複数できることをDBでも防ぎます。
 
