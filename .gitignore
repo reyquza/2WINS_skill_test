@@ -1,0 +1,40 @@
+# Environment variables and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/.venv/
+**/__pycache__/
+*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+.uv-cache/
+
+# SQLite and local data
+*.db
+*.sqlite
+*.sqlite3
+
+# Node.js / Next.js
+**/node_modules/
+**/.next/
+**/out/
+**/coverage/
+*.tsbuildinfo
+npm-debug.log*
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local AI tool settings
+.agents/
+.codex/
+**/CLAUDE.md
+
+# Company-provided assignment document
+2wins.pdf
