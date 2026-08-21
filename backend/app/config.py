@@ -8,6 +8,22 @@ DATABASE_URL = os.getenv(
     f"sqlite:///{DEFAULT_DB_PATH.as_posix()}",
 )
 
+JWT_SECRET_KEY = os.getenv(
+    "JWT_SECRET_KEY",
+    "development-only-change-this-secret-before-deployment",
+)
+JWT_ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+)
+AUTH_COOKIE_NAME = "access_token"
+AUTH_COOKIE_SECURE = (
+    os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true"
+)
+
+if ACCESS_TOKEN_EXPIRE_MINUTES <= 0:
+    raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES must be positive")
+
 
 def _load_frontend_origins() -> tuple[str, ...]:
     raw_origins = os.getenv(

@@ -7,6 +7,9 @@ services:
     environment:
       DATABASE_URL: sqlite:////app/data/chat.db
       FRONTEND_ORIGINS: http://localhost:3000
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-development-only-change-this-secret-before-deployment}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      AUTH_COOKIE_SECURE: "false"
     ports:
       - "8000:8000"
     volumes:

@@ -18,5 +18,12 @@ def list_users(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    stmt = select(User).where(User.id != current_user.id).order_by(User.username, User.id)
+    stmt = (
+        select(User)
+        .where(
+            User.id != current_user.id,
+            User.deleted_at.is_(None),
+        )
+        .order_by(User.username, User.id)
+    )
     return db.scalars(stmt).all()

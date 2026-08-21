@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
 
 UserName = Annotated[
@@ -24,9 +24,28 @@ MessageContent = Annotated[
 ]
 
 
+Password = Annotated[
+    str,
+    StringConstraints(
+        min_length=8,
+        max_length=128,
+    ),
+]
+
+
+class RegisterRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    username: UserName
+    email: EmailStr
+    password: Password
+
+
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    username: UserName
+
+    email: EmailStr
+    password: Password
 
 
 class UserResponse(BaseModel):
@@ -35,6 +54,15 @@ class UserResponse(BaseModel):
     id: int
     username: str
     created_at: datetime
+
+
+class CurrentUserResponse(UserResponse):
+    email: EmailStr
+    is_admin: bool
+
+
+class AdminUserResponse(CurrentUserResponse):
+    deleted_at: datetime | None
 
 
 class DMRoomRequest(BaseModel):
@@ -47,6 +75,10 @@ class RoomResponse(BaseModel):
 
     id: int
     created_at: datetime
+
+
+class RoomDetailResponse(RoomResponse):
+    other_user: UserResponse
 
 
 class MessageResponse(BaseModel):
