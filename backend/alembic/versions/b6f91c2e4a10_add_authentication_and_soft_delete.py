@@ -44,7 +44,7 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.DateTime(), nullable=True),
     )
 
-    # 簡易ログイン時代のユーザーと履歴は残すが、ログインはできない値にする。
+    # Preserve legacy users and messages while preventing password-based login.
     op.execute(
         sa.text(
             "UPDATE users "

@@ -29,7 +29,7 @@ function mergeMessage(
   currentMessages: Message[],
   incomingMessage: Message,
 ): Message[] {
-  // RESTの送信結果とWebSocket通知が同じメッセージでも二重表示しない。
+  // The REST response and WebSocket event may contain the same message.
   const alreadyExists = currentMessages.some(
     (message) => message.id === incomingMessage.id,
   );
@@ -54,7 +54,7 @@ function formatMessageTime(value: string): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
+  return new Intl.DateTimeFormat("en-US", {
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
@@ -94,7 +94,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
         }
 
         const authenticatedUserId = currentUser.id;
-        // 互いに依存しないルーム情報と履歴は同時に取得する。
+        // Room metadata and history are independent, so load them concurrently.
         const [roomResponse, messagesResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
             credentials: "include",
@@ -110,22 +110,22 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
         }
 
         if (roomResponse.status === 403 || messagesResponse.status === 403) {
-          throw new Error("このチャットルームを閲覧する権限がありません。");
+          throw new Error("You do not have access to this conversation.");
         }
 
         if (roomResponse.status === 404 || messagesResponse.status === 404) {
-          throw new Error("チャットルームが見つかりませんでした。");
+          throw new Error("This conversation could not be found.");
         }
 
         if (!roomResponse.ok || !messagesResponse.ok) {
-          throw new Error("チャット情報を取得できませんでした。");
+          throw new Error("We could not load this conversation.");
         }
 
         const roomData: unknown = await roomResponse.json();
         const messagesData: unknown = await messagesResponse.json();
 
         if (!isRoomDetail(roomData) || !isMessageList(messagesData)) {
-          throw new Error("サーバーから不正なデータを受信しました。");
+          throw new Error("The server returned an invalid response.");
         }
 
         if (!isCancelled) {
@@ -138,7 +138,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "メッセージ履歴を取得できませんでした。",
+              : "We could not load the message history.",
           );
         }
       } finally {
@@ -290,21 +290,21 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
       }
 
       if (response.status === 403) {
-        throw new Error("このチャットルームへ送信する権限がありません。");
+        throw new Error("You do not have permission to send messages here.");
       }
 
       if (response.status === 404) {
-        throw new Error("チャットルームが見つかりませんでした。");
+        throw new Error("This conversation could not be found.");
       }
 
       if (!response.ok) {
-        throw new Error("メッセージを送信できませんでした。");
+        throw new Error("We could not send your message.");
       }
 
       const responseData: unknown = await response.json();
 
       if (!isMessage(responseData)) {
-        throw new Error("サーバーから不正なデータを受信しました。");
+        throw new Error("The server returned an invalid response.");
       }
 
       setMessages((currentMessages) =>
@@ -315,7 +315,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
       setSendErrorMessage(
         error instanceof Error
           ? error.message
-          : "メッセージを送信できませんでした。",
+          : "We could not send your message.",
       );
     } finally {
       setIsSending(false);
@@ -334,7 +334,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
       <main className="chat-page">
         <section className="chat-shell loading-card" aria-live="polite">
           <div className="loading-spinner" aria-hidden="true" />
-          <p>メッセージを読み込んでいます...</p>
+          <p>Loading messages...</p>
         </section>
       </main>
     );
@@ -345,10 +345,10 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
       <main className="chat-page">
         <section className="chat-shell error-card">
           <div className="error-symbol" aria-hidden="true">!</div>
-          <h1>チャットを開けませんでした</h1>
+          <h1>Unable to open conversation</h1>
           <p className="alert alert-error" role="alert">{errorMessage}</p>
           <Link className="primary-button inline-button" href="/home">
-            ユーザー一覧へ戻る
+            Back to people
           </Link>
         </section>
       </main>
@@ -359,11 +359,11 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
     <main className="chat-page">
       <section className="chat-shell">
         <header className="chat-header">
-          <Link className="back-link" href="/home" aria-label="ユーザー一覧へ戻る">
+          <Link className="back-link" href="/home" aria-label="Back to people">
             ←
           </Link>
           <div className="chat-title">
-            <h1>{otherUsername}とのチャット</h1>
+            <h1>Chat with {otherUsername}</h1>
           </div>
         </header>
 
@@ -371,8 +371,8 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
           {messages.length === 0 ? (
             <div className="chat-empty-state">
               <span aria-hidden="true">✦</span>
-              <h2>会話を始めましょう</h2>
-              <p>最初のメッセージを送ってみてください。</p>
+              <h2>Start the conversation</h2>
+              <p>Send the first message to say hello.</p>
             </div>
           ) : (
             <ol className="message-list" aria-live="polite">
@@ -407,7 +407,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
 
           <form className="composer-form" onSubmit={handleSubmit}>
             <label className="visually-hidden" htmlFor="message-content">
-              メッセージ
+              Message
             </label>
             <textarea
               id="message-content"
@@ -417,7 +417,7 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
               onKeyDown={handleTextareaKeyDown}
               maxLength={2000}
               rows={1}
-              placeholder="メッセージを入力"
+              placeholder="Write a message"
               aria-describedby="composer-help"
               disabled={isSending}
               required
@@ -426,13 +426,13 @@ export default function ChatRoom({ roomId }: ChatRoomProps) {
               className="send-button"
               type="submit"
               disabled={isSending || messageContent.trim().length === 0}
-              aria-label="メッセージを送信"
+              aria-label="Send message"
             >
-              {isSending ? "…" : "送信"}
+              {isSending ? "…" : "Send"}
             </button>
           </form>
           <div id="composer-help" className="composer-help">
-            <span>Enterで送信・Shift + Enterで改行</span>
+            <span>Enter to send · Shift + Enter for a new line</span>
             <span>{messageContent.length}/2000</span>
           </div>
         </footer>

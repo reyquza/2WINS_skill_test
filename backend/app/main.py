@@ -7,8 +7,8 @@ from app.routers import admin, auth, messages, rooms, users
 
 
 app = FastAPI(
-    title="2WINS Chat API",
-    description="1対1のリアルタイムチャットAPI",
+    title="Relay API",
+    description="API for secure one-to-one messaging with real-time updates",
     version="1.0.0",
 )
 
@@ -30,4 +30,4 @@ app.include_router(websocket.router)
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    return {"message": "2WINS Chat API is running"}
+    return {"message": "Relay API is running"}

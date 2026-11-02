@@ -56,7 +56,7 @@ export default function HomePage() {
         }
       } catch {
         if (!isCancelled) {
-          setErrorMessage("ユーザー一覧を取得できませんでした。");
+          setErrorMessage("We could not load the user list.");
         }
       } finally {
         if (!isCancelled) {
@@ -98,7 +98,7 @@ export default function HomePage() {
 
       router.push(`/chat/${responseData.id}`);
     } catch {
-      setErrorMessage("チャットルームを開けませんでした。");
+      setErrorMessage("We could not open the conversation.");
     } finally {
       setOpeningUserId(null);
     }
@@ -117,7 +117,7 @@ export default function HomePage() {
       <main className="page-shell">
         <section className="content-card loading-card" aria-live="polite">
           <div className="loading-spinner" aria-hidden="true" />
-          <p>ユーザーを読み込んでいます...</p>
+          <p>Loading people...</p>
         </section>
       </main>
     );
@@ -128,12 +128,12 @@ export default function HomePage() {
       <section className="content-card home-card">
         <header className="home-header">
           <div>
-            <p className="eyebrow">2WINS Chat</p>
-            <h1>メッセージ</h1>
+            <p className="eyebrow">Relay</p>
+            <h1>Messages</h1>
             {currentUser && (
               <p className="signed-in-user">
                 <span className="status-dot" aria-hidden="true" />
-                {currentUser.username} としてログイン中
+                Signed in as {currentUser.username}
               </p>
             )}
           </div>
@@ -141,7 +141,7 @@ export default function HomePage() {
           <div className="header-actions">
             {currentUser?.is_admin && (
               <Link className="secondary-button" href="/admin">
-                管理
+                Admin
               </Link>
             )}
             <button
@@ -149,7 +149,7 @@ export default function HomePage() {
               type="button"
               onClick={() => void handleLogout()}
             >
-              ログアウト
+              Sign out
             </button>
           </div>
         </header>

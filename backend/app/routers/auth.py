@@ -84,7 +84,7 @@ def login(
     user = db.scalars(stmt).one_or_none()
 
     if user is None or user.deleted_at is not None:
-        # 存在しないメールでもハッシュ計算を行い、応答時間から登録有無を推測しにくくする。
+        # Perform the same expensive hash check for unknown emails to reduce timing leaks.
         verify_password(login_data.password, DUMMY_PASSWORD_HASH)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

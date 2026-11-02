@@ -36,12 +36,12 @@ export default function RegisterForm() {
       });
 
       if (response.status === 409) {
-        setErrorMessage("そのユーザー名またはメールアドレスは使用済みです。");
+        setErrorMessage("That username or email address is already in use.");
         return;
       }
 
       if (!response.ok) {
-        setErrorMessage("入力内容を確認してください。");
+        setErrorMessage("Please check the information you entered.");
         return;
       }
 
@@ -53,7 +53,7 @@ export default function RegisterForm() {
       router.replace("/home");
     } catch {
       setErrorMessage(
-        "サーバーに接続できません。しばらくしてから再度お試しください。",
+        "We could not reach the server. Please try again in a moment.",
       );
     } finally {
       setIsSubmitting(false);
@@ -63,7 +63,7 @@ export default function RegisterForm() {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="field-header">
-        <label htmlFor="username">ユーザー名</label>
+        <label htmlFor="username">Username</label>
         <span aria-hidden="true">{username.length}/50</span>
       </div>
       <input
@@ -79,7 +79,7 @@ export default function RegisterForm() {
         required
       />
 
-      <label className="field-label" htmlFor="email">メールアドレス</label>
+      <label className="field-label" htmlFor="email">Email address</label>
       <input
         className="text-input"
         id="email"
@@ -92,7 +92,7 @@ export default function RegisterForm() {
         required
       />
 
-      <label className="field-label" htmlFor="password">パスワード</label>
+      <label className="field-label" htmlFor="password">Password</label>
       <input
         className="text-input"
         id="password"
@@ -107,7 +107,7 @@ export default function RegisterForm() {
         disabled={isSubmitting}
         required
       />
-      <p id="password-help" className="field-help">8文字以上で入力してください。</p>
+      <p id="password-help" className="field-help">Use at least 8 characters.</p>
 
       {errorMessage && (
         <p className="alert alert-error" role="alert">{errorMessage}</p>
@@ -123,12 +123,12 @@ export default function RegisterForm() {
           password.length < 8
         }
       >
-        {isSubmitting ? "登録中..." : "アカウントを作成"}
+        {isSubmitting ? "Creating account..." : "Create account"}
       </button>
 
       <p className="auth-switch">
-        すでにアカウントをお持ちの方は
-        <Link href="/login">ログイン</Link>
+        Already have an account?{" "}
+        <Link href="/login">Sign in</Link>
       </p>
     </form>
   );

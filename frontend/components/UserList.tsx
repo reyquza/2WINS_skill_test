@@ -16,16 +16,16 @@ export default function UserList({
     <section className="user-section" aria-labelledby="user-list-title">
       <div className="section-heading">
         <div>
-          <h2 id="user-list-title">ユーザー</h2>
-          <p>話したい相手を選んでください。</p>
+          <h2 id="user-list-title">People</h2>
+          <p>Choose someone to start a conversation.</p>
         </div>
       </div>
 
       {users.length === 0 ? (
         <div className="empty-state">
           <span className="empty-icon" aria-hidden="true">＋</span>
-          <p>他のユーザーはまだいません。</p>
-          <small>別の名前で入室すると、ここに表示されます。</small>
+          <p>No one else is here yet.</p>
+          <small>Other active accounts will appear here.</small>
         </div>
       ) : (
         <ul className="user-list">
@@ -44,8 +44,8 @@ export default function UserList({
                 disabled={openingUserId !== null}
               >
                 {openingUserId === user.id
-                  ? "開いています..."
-                  : "チャットする →"}
+                  ? "Opening..."
+                  : "Start chat →"}
               </button>
             </li>
           ))}

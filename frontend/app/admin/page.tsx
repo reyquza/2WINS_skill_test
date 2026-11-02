@@ -55,7 +55,7 @@ export default function AdminPage() {
         }
       } catch {
         if (!isCancelled) {
-          setErrorMessage("ユーザー情報を取得できませんでした。");
+          setErrorMessage("We could not load the user accounts.");
         }
       } finally {
         if (!isCancelled) {
@@ -72,7 +72,7 @@ export default function AdminPage() {
 
   async function handleDelete(user: AdminUser): Promise<void> {
     const confirmed = window.confirm(
-      `${user.username} を利用停止にします。よろしいですか？`,
+      `Deactivate ${user.username}? They will no longer be able to sign in.`,
     );
     if (!confirmed) {
       return;
@@ -114,7 +114,7 @@ export default function AdminPage() {
         ),
       );
     } catch {
-      setErrorMessage("ユーザーを利用停止にできませんでした。");
+      setErrorMessage("We could not deactivate this account.");
     } finally {
       setDeletingUserId(null);
     }
@@ -125,7 +125,7 @@ export default function AdminPage() {
       <main className="page-shell">
         <section className="content-card loading-card" aria-live="polite">
           <div className="loading-spinner" aria-hidden="true" />
-          <p>管理情報を読み込んでいます...</p>
+          <p>Loading account management...</p>
         </section>
       </main>
     );
@@ -137,9 +137,9 @@ export default function AdminPage() {
         <header className="home-header">
           <div>
             <p className="eyebrow">Administration</p>
-            <h1>ユーザー管理</h1>
+            <h1>User management</h1>
           </div>
-          <Link className="secondary-button" href="/home">戻る</Link>
+          <Link className="secondary-button" href="/home">Back</Link>
         </header>
 
         {errorMessage && (
@@ -156,21 +156,21 @@ export default function AdminPage() {
                 <div>
                   <p className="admin-user-name">
                     {user.username}
-                    {user.is_admin && <span className="admin-badge">管理者</span>}
+                    {user.is_admin && <span className="admin-badge">Admin</span>}
                   </p>
                   <p className="admin-user-email">{user.email}</p>
                 </div>
                 {isDeleted ? (
-                  <span className="deleted-badge">利用停止済み</span>
+                  <span className="deleted-badge">Deactivated</span>
                 ) : (
                   <button
                     className="danger-button"
                     type="button"
                     onClick={() => void handleDelete(user)}
                     disabled={isCurrentAdmin || deletingUserId === user.id}
-                    title={isCurrentAdmin ? "自分自身は停止できません" : undefined}
+                    title={isCurrentAdmin ? "You cannot deactivate your own account" : undefined}
                   >
-                    {deletingUserId === user.id ? "停止中..." : "利用停止"}
+                    {deletingUserId === user.id ? "Deactivating..." : "Deactivate"}
                   </button>
                 )}
               </li>

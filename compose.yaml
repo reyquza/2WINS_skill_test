@@ -1,4 +1,4 @@
-name: twowins-chat
+name: relay-chat
 
 services:
   backend:
