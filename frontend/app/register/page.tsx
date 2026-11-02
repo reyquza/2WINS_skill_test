@@ -6,9 +6,9 @@ export default function RegisterPage() {
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="register-title">
         <p className="eyebrow">Create your account</p>
-        <h1 id="register-title">新規登録</h1>
+        <h1 id="register-title">Create an account</h1>
         <p className="auth-description">
-          ユーザー名、メールアドレス、パスワードを登録します。
+          Choose a username and register with your email and password.
         </p>
         <RegisterForm />
       </section>

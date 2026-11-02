@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "FastAPI backend for the 2WINS realtime chat"
+description = "FastAPI backend for Relay real-time messaging"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "2WINS Chat",
-  description: "シンプルな1対1リアルタイムチャット",
+  title: "Relay — Real-Time Messaging",
+  description: "Secure one-to-one messaging with real-time updates.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ja">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

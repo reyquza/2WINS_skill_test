@@ -1,3 +1,3 @@
-# Backend
+# Relay Backend
 
-起動方法、設計、テストについては、プロジェクトルートの[README](../README.md)を参照してください。
+See the project-level [README](../README.md) for setup, architecture, and testing instructions.

@@ -1,183 +1,123 @@
-# 2WINS Chat
+# Relay
 
-メールアドレスとパスワードでログインし、他のユーザーと1対1でリアルタイムに会話できるチャットアプリです。2WINSの技術テストとして、認証、ユーザー一覧、DMルーム、メッセージ履歴・送信、WebSocket、管理者による利用停止まで実装しました。
+Relay is a full-stack, one-to-one messaging app with secure cookie-based authentication and real-time delivery. It combines a Next.js client with a FastAPI API, a relational chat model, and WebSocket updates while keeping the database as the source of truth.
 
-## 主な機能
+## Highlights
 
-- ユーザー名・メールアドレス・パスワードによる登録とログイン
-- HttpOnly Cookieに保存した短時間JWTによる認証
-- 自分以外の有効なユーザー一覧
-- 2人の間で1つだけ作られるDMルーム
-- ルーム参加者だけが行えるメッセージ取得・送信
-- WebSocketによる新着メッセージのリアルタイム反映
-- 切断時の自動再接続とメッセージ再同期
-- 管理者によるユーザーのソフトデリート（利用停止）
-- PC・スマートフォンに対応したUI
+- Account registration and sign-in with username, email, and password
+- Argon2id password hashing and short-lived JWT authentication in an HttpOnly cookie
+- A list of active users excluding the signed-in account
+- Exactly one direct-message room for each pair of users
+- Participant-only access to message history and message creation
+- Real-time delivery over authenticated WebSocket connections
+- Automatic reconnection with exponential backoff and history synchronization
+- Admin-only account deactivation using soft deletion
+- Responsive UI for desktop and mobile browsers
 
-## 使用技術
+## Tech stack
 
-| 分類 | 技術 |
+| Area | Technology |
 | --- | --- |
-| Frontend | Next.js 16 / React 19 / TypeScript |
-| Backend | FastAPI / Pydantic v2 |
-| ORM / DB | SQLAlchemy 2.x / SQLite / Alembic |
-| Authentication | Argon2id（pwdlib）/ JWT（PyJWT） |
-| Realtime | WebSocket |
-| Test | pytest / FastAPI TestClient |
-| Environment | Docker / Docker Compose |
+| Frontend | Next.js 16, React 19, TypeScript |
+| Backend | FastAPI, Pydantic v2 |
+| Data | SQLAlchemy 2.x, SQLite, Alembic |
+| Authentication | Argon2id via pwdlib, JWT via PyJWT |
+| Real-time transport | WebSocket |
+| Testing | pytest, FastAPI TestClient |
+| Development | Docker, Docker Compose |
 
-## Dockerで起動する
+## Try Relay locally
 
-Docker Desktopなど、Docker Composeを利用できる環境が必要です。
+Docker Desktop or another Docker Compose environment is required.
 
 ```bash
 docker compose up --build
 ```
 
-- アプリ: http://localhost:3000
-- APIドキュメント: http://localhost:8000/docs
+Then open:
 
-通常ユーザーは画面の「新規登録」から作成します。管理者は、コンテナを操作できる人だけが次のCLIで作成します。コマンド実行後にパスワードを2回入力します。
+- Web app: <http://localhost:3000>
+- Interactive API documentation: <http://localhost:8000/docs>
+
+For a quick real-time demo:
+
+1. Register one account in your regular browser window.
+2. Register a second account in a private window or another browser.
+3. Select the other account from the **People** list.
+4. Send messages from both windows and watch them appear in real time.
+
+Create regular users from the registration page. To create an administrator, run the following command and enter the password twice when prompted:
 
 ```bash
 docker compose exec backend uv run --no-sync python -m app.commands.create_admin --username admin --email admin@example.com
 ```
 
-停止は`docker compose down`です。SQLiteのデータは`chat_data` Volumeに残ります。`docker compose down -v`はユーザーとメッセージを含むデータを削除するため、初期化するときだけ使用してください。
+Stop the app with `docker compose down`. SQLite data remains in the `chat_data` volume. Use `docker compose down -v` only when you intentionally want to delete all users and messages.
 
-Composeはローカル確認用の秘密鍵でも起動できます。共有環境では`.env.example`を`.env`へコピーし、`JWT_SECRET_KEY`を十分に長いランダム値へ必ず変更してください。
+Docker Compose includes a development signing secret so the project starts without extra setup. Before sharing or deploying the app, copy `.env.example` to `.env` and replace `JWT_SECRET_KEY` with a long random value.
 
-## ローカルで起動する
-
-### Backend
-
-Python 3.12と[uv](https://docs.astral.sh/uv/)を使用します。
-
-```bash
-cd backend
-uv sync
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload --port 8000
-```
-
-管理者を作る場合は、Migration後に実行します。
-
-```bash
-uv run python -m app.commands.create_admin --username admin --email admin@example.com
-```
-
-### Frontend
-
-Node.js 22を推奨します。別のターミナルで実行します。
-
-```bash
-cd frontend
-npm ci
-npm run dev
-```
-
-| 変数 | 用途 | ローカル既定値 |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | ブラウザから接続するAPI | `http://localhost:8000` |
-| `NEXT_PUBLIC_WS_BASE_URL` | ブラウザから接続するWebSocket | `ws://localhost:8000` |
-| `FRONTEND_ORIGINS` | API・WebSocketが許可するFrontend | `http://localhost:3000` |
-| `DATABASE_URL` | SQLAlchemyの接続先 | `backend/chat.db` |
-| `JWT_SECRET_KEY` | JWT署名用の秘密鍵 | 開発専用値 |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | JWTの有効時間 | `60` |
-| `AUTH_COOKIE_SECURE` | HTTPSだけにCookieを送るか | `false` |
-
-本番のHTTPS環境では`AUTH_COOKIE_SECURE=true`にし、FrontendとAPIのURL・Originも実環境へ変更します。
-
-## テスト
-
-```bash
-cd backend
-uv run pytest
-```
-
-このプロジェクトでは、パスワードのハッシュ化とCookie、未認証アクセス拒否、ユーザー一覧、DMの一意性、ルーム外403、WebSocket通知とOrigin制限、管理権限、ソフトデリート後のログイン拒否をテストしています。一時SQLiteを使うため、開発用`chat.db`は変更しません。
-
-Frontendは次で静的検査と本番ビルドを確認します。
-
-```bash
-cd frontend
-npm run lint
-npx tsc --noEmit
-npm run build
-```
-
-今回は画面のE2Eテストを追加していません。画面が増える場合はPlaywrightなどで「登録→ログイン→DM送信→受信」の一連を追加する方針です。
-
-## 全体構成
+## Architecture
 
 ```mermaid
 flowchart LR
-    Browser[Next.js / Browser]
-    API[FastAPI]
+    Browser[Next.js client]
+    API[FastAPI application]
     DB[(SQLite)]
 
-    Browser -->|REST + HttpOnly Cookie| API
-    Browser <-->|WebSocket + Cookie| API
+    Browser -->|REST + HttpOnly cookie| API
+    Browser <-->|WebSocket + cookie| API
     API -->|SQLAlchemy| DB
 ```
 
-メッセージ送信はREST APIで検証・権限確認・保存を行い、コミット成功後にWebSocketで通知します。WebSocketだけで保存まで行わないことで、処理を1か所にまとめ、未保存メッセージの通知を避けています。
+Message writes go through the REST API, where the server validates input, checks room membership, and commits the message. Only after a successful commit does the server broadcast a `message.created` event over WebSocket. This keeps persistence in one code path and prevents clients from seeing messages that were never saved.
 
-切断時は1秒、2秒、4秒、最大8秒と間隔を広げて再接続します。再接続後に履歴APIも取得するため、切断中の取りこぼしを補えます。DBを正しい状態の基準、WebSocketを素早い通知手段として扱っています。
+When a WebSocket disconnects, the client retries after 1, 2, 4, and then at most 8 seconds. It fetches message history again after reconnecting, so messages sent during the interruption are recovered. The database is the source of truth; WebSocket is the low-latency notification channel.
 
-## シーケンス図
+### Sign-in and messaging sequence
 
 ```mermaid
 sequenceDiagram
-    actor User as ユーザー
-    participant Client as Browser / Next.js
+    actor User
+    participant Client as Next.js client
     participant API as FastAPI
     participant DB as SQLite
-    participant WS as WebSocket接続管理
+    participant WS as WebSocket manager
 
-    User->>Client: メールアドレス・パスワードを入力
+    User->>Client: Enter email and password
     Client->>API: POST /api/auth/login
-    API->>DB: メールアドレスでユーザーを検索
-    DB-->>API: パスワードハッシュ・利用状態
-    API->>API: Argon2idを検証しJWTへ署名
+    API->>DB: Find active user by email
+    DB-->>API: Password hash and account state
+    API->>API: Verify Argon2id hash and sign JWT
     API-->>Client: Set-Cookie (HttpOnly)
 
-    Client->>API: GET /api/rooms/{id}/messages + Cookie
-    API->>API: JWTの署名・有効期限を検証
-    API->>DB: ユーザーとルーム参加権限を確認
-    DB-->>API: メッセージ履歴
+    Client->>API: GET /api/rooms/{id}/messages + cookie
+    API->>API: Verify JWT signature and expiry
+    API->>DB: Check active user and room membership
+    DB-->>API: Message history
     API-->>Client: 200 OK
 
-    Client->>API: WebSocket接続 + Cookie
-    API->>DB: 利用状態とルーム参加権限を確認
-    API-->>Client: 接続をaccept
+    Client->>API: WebSocket handshake + cookie
+    API->>DB: Check account state and room membership
+    API-->>Client: Accept connection
 
-    User->>Client: メッセージを送信
-    Client->>API: POST /api/rooms/{id}/messages + Cookie
-    API->>DB: メッセージをINSERTしてcommit
-    DB-->>API: 保存済みメッセージ
+    User->>Client: Send message
+    Client->>API: POST /api/rooms/{id}/messages + cookie
+    API->>DB: Insert and commit message
+    DB-->>API: Persisted message
     API-->>Client: 201 Created
-    API->>WS: message.createdをbroadcast
-    WS-->>Client: 新着メッセージをリアルタイム通知
+    API->>WS: Broadcast message.created
+    WS-->>Client: Deliver real-time update
 ```
 
-## DB設計と理由
+## Data model and design choices
 
-| テーブル | 役割 |
+| Table | Responsibility |
 | --- | --- |
-| `users` | 認証情報、管理権限、利用停止日時 |
-| `rooms` | DM・将来のグループに共通する会話単位 |
-| `room_members` | ルーム参加者とアクセス権限 |
-| `dm_rooms` | DMの2人と`rooms`の対応 |
-| `messages` | ルーム内のメッセージ |
-
-`rooms`と`room_members`をDM専用情報から分け、メッセージを「DM」ではなく「ルーム」に所属させました。将来グループチャット機能を追加しても`messages`を作り直さず、グループ情報と参加者を追加できます。
-
-`dm_rooms`では小さいユーザーIDを`user_low_id`、大きいIDを`user_high_id`へ保存します。このcanonical pairとUNIQUE制約により、Alice→BobとBob→Aliceを同じ組み合わせにし、同じ2人のDMが複数できることをDBでも防ぎます。
-
-ユーザー削除は`deleted_at`を記録するソフトデリートです。ログイン、一覧、DM、WebSocketからは除外しますが、過去メッセージと参照整合性は残します。停止済みメールアドレスとユーザー名は監査・誤再利用防止のため予約されたままです。
-
-## ER図
+| `users` | Authentication data, administrator role, and deactivation time |
+| `rooms` | Conversation identity shared by DMs and possible future group chats |
+| `room_members` | Room membership and authorization boundary |
+| `dm_rooms` | Mapping between a room and its two DM participants |
+| `messages` | Messages belonging to a room |
 
 ```mermaid
 erDiagram
@@ -224,54 +164,119 @@ erDiagram
     }
 ```
 
-`dm_rooms(user_low_id, user_high_id)`には複合UNIQUE制約、`user_low_id < user_high_id`にはCHECK制約があります。
+Messages belong to a general-purpose `room`, not directly to a DM. Separating `rooms` and `room_members` from `dm_rooms` means group chat metadata can be added later without rebuilding the message model.
 
-## Backendの分割
+For a DM, the lower user ID is always stored as `user_low_id` and the higher ID as `user_high_id`. This canonical pair has a composite `UNIQUE` constraint, so Alice-to-Bob and Bob-to-Alice resolve to the same room. A `CHECK` constraint also enforces `user_low_id < user_high_id`.
 
-- `routers`: HTTPリクエスト、ステータスコード、レスポンスを扱う
-- `services`: DM作成やメッセージ保存などのアプリ処理を扱う
-- `dependencies.py`: JWTから現在ユーザーと管理権限を解決する
-- `security.py`: パスワードとJWT、認証Cookieを扱う
-- `schemas.py`: APIへ入る値・出る値をPydanticで検証する
-- `models.py`: DBテーブルと制約をSQLAlchemyで表す
-- `websocket.py`: 接続認証、接続管理、リアルタイム通知を扱う
+Account deletion is implemented as deactivation by setting `deleted_at`. Deactivated users are excluded from sign-in, user discovery, DM creation, and WebSocket access, while historical messages and referential integrity remain intact. Their username and email stay reserved to avoid accidental identity reuse.
 
-HTTPの都合とチャットのルールを混ぜすぎないための分割です。一方、小規模課題なのでRepository層などの抽象化は増やしていません。
+## Backend organization
 
-## 認証・管理者設計
+- `routers` handles HTTP input, status codes, and response schemas.
+- `services` contains application operations such as creating DMs and saving messages.
+- `dependencies.py` resolves the current user and administrator authorization from the JWT.
+- `security.py` handles password hashing, JWTs, and the authentication cookie.
+- `schemas.py` validates API input and output with Pydantic.
+- `models.py` defines SQLAlchemy tables, relationships, and database constraints.
+- `websocket.py` authenticates connections, tracks clients, and broadcasts events.
 
-認証フローはFastAPI内に実装しましたが、暗号処理そのものは自作していません。パスワードは`pwdlib`推奨設定のArgon2idで一方向ハッシュ化し、平文を保存・返却しません。
+This keeps HTTP concerns separate from chat rules without adding extra repository abstractions that would provide little value at the current scale.
 
-ログイン成功時は、ユーザーIDを`sub`、発行時刻を`iat`、有効期限を`exp`に持つJWTへサーバーが署名します。JWTは暗号化ではないため、秘密情報は入れません。ブラウザにはJavaScriptから読めないHttpOnly Cookieとして保存し、RESTとWebSocketの両方で同じCookieを検証します。`localStorage`や利用者指定のIDヘッダーは認証に使いません。
+## Authentication and security
 
-管理者は公開登録画面の「管理者コード」では作りません。コードの漏えい・総当たり・使い回しによる権限昇格を避け、サーバー操作権限を持つ人だけがCLIで作成します。画面表示だけでなく、管理APIでも`is_admin`を検証します。
+Relay implements the authentication flow inside FastAPI but delegates cryptography to maintained libraries. Passwords are one-way hashed with pwdlib's recommended Argon2id configuration and are never stored or returned as plaintext.
 
-## 意図的に残した制約
+After a successful login, the server signs a JWT containing the user ID in `sub`, the issued time in `iat`, and the expiry in `exp`. A JWT is signed, not encrypted, so it contains no secrets. The browser receives it in an HttpOnly cookie that JavaScript cannot read. REST endpoints and WebSocket handshakes validate the same cookie; client-provided user IDs and `localStorage` are not trusted for authentication.
 
-技術テストの規模と締切を考え、次は未実装であることを把握した上で残しています。
+Administrators are created through a server-side CLI rather than a public registration code. This avoids privilege escalation through leaked, reused, or brute-forced codes. Authorization is enforced by the admin API as well as by the UI.
 
-- JWTは60分のAccess Tokenのみで、Refresh Token、ローテーション、失効リストはありません。ログアウトはCookieを削除しますが、既に盗まれたJWT自体は期限まで失効しません。
-- Cookieは`SameSite=Lax`、CORS、WebSocket Origin制限を使います。別サイト構成や高リスク操作を持つ実サービスではCSRF Tokenも追加します。
-- ログイン試行のRate Limit、メール確認、パスワード再設定、MFAはありません。
-- ソフトデリートの復元画面、個人情報の匿名化、保持期限はありません。実サービスでは運用・法的要件に合わせます。
-- 認証追加前の開発DBにいた簡易ログインユーザーは履歴を残しつつログイン不能な値へMigrationします。必要なら新規登録し直します。
-- SQLiteは小規模・単一サーバー向けです。同時書き込みが増えればPostgreSQLなどへ移行します。
-- WebSocket接続はFastAPIプロセス内メモリで管理します。複数サーバー化ではRedis Pub/Subなどで通知を共有します。
-- 履歴は全件取得です。増加時はメッセージID基準のページネーションを追加します。
-- 友達申請とグループチャットは課題対象外です。ただしグループ追加時にメッセージ構造を作り直しにくいDB設計にしています。
+## Run without Docker
 
-## ディレクトリ構成
+### Backend
+
+Python 3.12 and [uv](https://docs.astral.sh/uv/) are recommended.
+
+```bash
+cd backend
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+To create an administrator after applying migrations:
+
+```bash
+uv run python -m app.commands.create_admin --username admin --email admin@example.com
+```
+
+### Frontend
+
+Node.js 22 is recommended. Run these commands in a separate terminal:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+### Environment variables
+
+| Variable | Purpose | Local default |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | API URL used by the browser | `http://localhost:8000` |
+| `NEXT_PUBLIC_WS_BASE_URL` | WebSocket URL used by the browser | `ws://localhost:8000` |
+| `FRONTEND_ORIGINS` | Frontend origins allowed by REST and WebSocket | `http://localhost:3000` |
+| `DATABASE_URL` | SQLAlchemy database URL | `backend/chat.db` |
+| `JWT_SECRET_KEY` | Secret used to sign JWTs | Development-only value |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | JWT lifetime in minutes | `60` |
+| `AUTH_COOKIE_SECURE` | Restrict the cookie to HTTPS | `false` |
+
+Set `AUTH_COOKIE_SECURE=true` in an HTTPS environment and replace all local URLs and allowed origins with their deployed values.
+
+## Tests and checks
+
+Run the backend test suite:
+
+```bash
+cd backend
+uv run pytest
+```
+
+The suite covers password hashing and cookies, unauthenticated access, user discovery, DM uniqueness, non-member authorization, WebSocket delivery and origin restrictions, admin authorization, and sign-in rejection after account deactivation. Tests use a temporary SQLite database and never modify the development database.
+
+Run frontend static checks and a production build:
+
+```bash
+cd frontend
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+## Current scope and production considerations
+
+- Authentication uses a 60-minute access token without refresh-token rotation or a revocation list. Signing out removes the cookie, but a stolen token remains valid until it expires.
+- `SameSite=Lax`, CORS restrictions, and WebSocket origin checks protect the current same-site setup. A cross-site production architecture would also require an explicit CSRF strategy and different cookie settings.
+- Rate limiting, email verification, password reset, and multi-factor authentication are not implemented.
+- Deactivated accounts do not yet have restoration, anonymization, or retention workflows.
+- SQLite is appropriate for this small, single-server project. A write-heavy or multi-instance deployment should use PostgreSQL or another server database.
+- WebSocket connections are tracked in one FastAPI process. Multiple backend instances would require shared fan-out such as Redis Pub/Sub.
+- Message history is loaded in full. Cursor pagination by message ID should be added as conversations grow.
+- End-to-end browser tests are not included yet. A Playwright flow covering registration, login, DM creation, sending, and receiving would be the next testing layer.
+- Group chat is outside the current scope, but the room-based data model is designed to add it without replacing the message table.
+
+## Project structure
 
 ```text
 .
 ├── backend/
-│   ├── app/          # FastAPI、認証、SQLAlchemy、WebSocket
-│   ├── alembic/      # DB Migration
-│   └── tests/        # pytest
+│   ├── app/          # FastAPI, authentication, SQLAlchemy, and WebSocket code
+│   ├── alembic/      # Database migrations
+│   └── tests/        # pytest suite
 ├── frontend/
-│   ├── app/          # Next.js App Routerと画面
-│   ├── components/   # フォーム、一覧、チャット
-│   ├── lib/          # API接続設定と認証確認
-│   └── types/        # APIレスポンスのTypeScript型と型ガード
+│   ├── app/          # Next.js App Router pages
+│   ├── components/   # Forms, user list, and chat UI
+│   ├── lib/          # API configuration and authentication helpers
+│   └── types/        # TypeScript API types and runtime type guards
 └── compose.yaml
 ```

@@ -34,12 +34,12 @@ export default function LoginForm() {
       });
 
       if (response.status === 401) {
-        setErrorMessage("メールアドレスまたはパスワードが違います。");
+        setErrorMessage("The email address or password is incorrect.");
         return;
       }
 
       if (!response.ok) {
-        setErrorMessage("入力内容を確認してください。");
+        setErrorMessage("Please check the information you entered.");
         return;
       }
 
@@ -51,7 +51,7 @@ export default function LoginForm() {
       router.replace("/home");
     } catch {
       setErrorMessage(
-        "サーバーに接続できません。しばらくしてから再度お試しください。",
+        "We could not reach the server. Please try again in a moment.",
       );
     } finally {
       setIsSubmitting(false);
@@ -60,7 +60,7 @@ export default function LoginForm() {
 
   return (
     <form className="login-form" onSubmit={handleSubmit}>
-      <label className="field-label" htmlFor="email">メールアドレス</label>
+      <label className="field-label" htmlFor="email">Email address</label>
       <input
         className="text-input"
         id="email"
@@ -74,7 +74,7 @@ export default function LoginForm() {
         required
       />
 
-      <label className="field-label" htmlFor="password">パスワード</label>
+      <label className="field-label" htmlFor="password">Password</label>
       <input
         className="text-input"
         id="password"
@@ -98,12 +98,12 @@ export default function LoginForm() {
         type="submit"
         disabled={isSubmitting || !email.trim() || password.length < 8}
       >
-        {isSubmitting ? "ログイン中..." : "ログイン"}
+        {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
 
       <p className="auth-switch">
-        アカウントをお持ちでない方は
-        <Link href="/register">新規登録</Link>
+        New to Relay?{" "}
+        <Link href="/register">Create an account</Link>
       </p>
     </form>
   );

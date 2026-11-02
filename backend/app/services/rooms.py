@@ -63,7 +63,7 @@ def get_or_create_dm_room(
     except IntegrityError:
         db.rollback()
 
-        # ほぼ同時に同じ2人がDMを開いた場合は、先に作られた部屋を使う。
+        # If both users open the same DM concurrently, reuse the room committed first.
         concurrent_dm_room = db.scalars(stmt).one_or_none()
         if concurrent_dm_room is not None:
             concurrent_room = db.get(Room, concurrent_dm_room.room_id)

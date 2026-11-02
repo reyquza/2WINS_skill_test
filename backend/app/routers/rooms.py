@@ -41,7 +41,7 @@ def read_dm_room(
             detail="DM room not found",
         )
 
-    # canonical pairのうち、現在ユーザーではない側が画面に出す相手になる。
+    # The other side of the canonical pair is the conversation partner shown in the UI.
     other_user_id = (
         dm_room.user_high_id
         if dm_room.user_low_id == current_user.id

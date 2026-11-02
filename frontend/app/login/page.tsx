@@ -6,9 +6,9 @@ export default function LoginPage() {
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="login-title">
         <p className="eyebrow">Simple direct messaging</p>
-        <h1 id="login-title">2WINS Chat</h1>
+        <h1 id="login-title">Relay</h1>
         <p className="auth-description">
-          登録したメールアドレスとパスワードでログインしてください。
+          Sign in with the email address and password you registered.
         </p>
         <LoginForm />
       </section>
